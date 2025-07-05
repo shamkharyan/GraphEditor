@@ -1,0 +1,23 @@
+# CMake build
+/build-*/
+build/
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
+
+# Qt Creator
+*.pro.user
+*.user
+*.qbs.user
+*.creator.user
+
+# Object files
+*.o
+*.obj
+
+# Generated moc/uisrc
+moc_*.cpp
+ui_*.h
+qrc_*.cpp
+

@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/icons"/>
+    <qresource prefix="/">
+        <file>../Загрузки/icons8-select.svg</file>
+        <file>../Загрузки/add-ellipse-svgrepo-com.svg</file>
+        <file>../Загрузки/vector-line-svgrepo-com.svg</file>
+        <file>../Загрузки/redo-svgrepo-com.svg</file>
+        <file>../Загрузки/undo-svgrepo-com(1).svg</file>
+        <file>../Загрузки/delete-svgrepo-com.svg</file>
+        <file>../Загрузки/zoom-cancel-svgrepo-com.svg</file>
+        <file>../Загрузки/zoom-in-svgrepo-com.svg</file>
+        <file>../Загрузки/zoom-out-svgrepo-com.svg</file>
+    </qresource>
+</RCC>
