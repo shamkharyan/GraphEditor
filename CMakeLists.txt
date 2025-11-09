@@ -1,6 +1,5 @@
-cmake_minimum_required(VERSION 3.5)
-
-project(GraphEditor VERSION 0.1 LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.16)
+project(GraphEditor LANGUAGES CXX)
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
@@ -9,68 +8,55 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Widgets)
+qt_standard_project_setup()
 
-set(PROJECT_SOURCES
-        main.cpp
-        mainwindow.cpp
-        mainwindow.h
-        mainwindow.ui
+set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/includes)
+set(SRC_DIR     ${CMAKE_CURRENT_SOURCE_DIR}/srcs)
+set(UI_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/ui)
+set(RES_DIR     ${CMAKE_CURRENT_SOURCE_DIR}/resources)
+
+# Set UI files
+set(UI_FILES ${UI_DIR}/mainwindow.ui)
+
+# Set SOURCE files (cpp files)
+set(SOURCES
+    ${SRC_DIR}/main.cpp
+    ${SRC_DIR}/MainWindow.cpp
+    ${SRC_DIR}/GridScene.cpp
+    ${SRC_DIR}/GridGraphicsView.cpp
 )
 
-if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
-    qt_add_executable(GraphEditor
-        MANUAL_FINALIZATION
-        ${PROJECT_SOURCES}
-    )
-# Define target properties for Android with Qt 6 as:
-#    set_property(TARGET GraphEditor APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
-#                 ${CMAKE_CURRENT_SOURCE_DIR}/android)
-# For more information, see https://doc.qt.io/qt-6/qt-add-executable.html#target-creation
-else()
-    if(ANDROID)
-        add_library(GraphEditor SHARED
-            ${PROJECT_SOURCES}
-        )
-# Define properties for Android with Qt 5 after find_package() calls as:
-#    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
-    else()
-        add_executable(GraphEditor
-            ${PROJECT_SOURCES}
-            resource.qrc
-            gridscene.h
-            gridscene.cpp
-            gridgraphicsview.h
-            gridgraphicsview.cpp
+# Set HEADER files (h files) - THIS IS CRITICAL FOR MOC
+set(HEADERS
+    ${INCLUDE_DIR}/MainWindow.h
+    ${INCLUDE_DIR}/GridScene.h
+    ${INCLUDE_DIR}/GridGraphicsView.h
+)
 
-        )
-    endif()
-endif()
+set(RESOURCES ${RES_DIR}/resource.qrc)
 
-target_link_libraries(GraphEditor PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+# Create executable with ALL files
+qt_add_executable(GraphEditor
+    ${SOURCES}
+    ${HEADERS}    # Add headers here for MOC processing
+    ${UI_FILES}
+    ${RESOURCES}
+    includes/model/EuclideanVertex.h
+    srcs/model/EuclideanVertex.cpp
 
-# Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
-# If you are developing for iOS or macOS you should consider setting an
-# explicit, fixed bundle identifier manually though.
-if(${QT_VERSION} VERSION_LESS 6.1.0)
-  set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.GraphEditor)
-endif()
+)
+
+# Include directories
+target_include_directories(GraphEditor PRIVATE
+    ${INCLUDE_DIR}
+    ${SRC_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}
+)
+
+target_link_libraries(GraphEditor PRIVATE Qt6::Widgets)
+
 set_target_properties(GraphEditor PROPERTIES
-    ${BUNDLE_ID_OPTION}
-    MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
-    MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
-    MACOSX_BUNDLE TRUE
-    WIN32_EXECUTABLE TRUE
+    WIN32_EXECUTABLE ON
+    MACOSX_BUNDLE ON
 )
-
-include(GNUInstallDirs)
-install(TARGETS GraphEditor
-    BUNDLE DESTINATION .
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
-
-if(QT_VERSION_MAJOR EQUAL 6)
-    qt_finalize_executable(GraphEditor)
-endif()

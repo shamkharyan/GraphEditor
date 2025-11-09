@@ -1,5 +1,5 @@
-#ifndef GRIDSCENE_H
-#define GRIDSCENE_H
+#ifndef GRID_SCENE_H
+#define GRID_SCENE_H
 
 #include <QGraphicsScene>
 #include <QPainter>
@@ -21,4 +21,4 @@ private:
     bool m_showGrid = true;
 };
 
-#endif // GRIDSCENE_H
+#endif // GRID_SCENE_H

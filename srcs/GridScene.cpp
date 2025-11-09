@@ -1,4 +1,4 @@
-#include "gridscene.h"
+#include "GridScene.h"
 #include <QtMath>
 #include <QDebug>
 #include <QGraphicsView>

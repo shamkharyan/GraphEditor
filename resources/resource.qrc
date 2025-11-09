@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/icons"/>
+    <qresource prefix="/">
+        <file>icons/add_edge.svg</file>
+        <file>icons/add_node.svg</file>
+        <file>icons/delete.svg</file>
+        <file>icons/redo.svg</file>
+        <file>icons/select.svg</file>
+        <file>icons/undo.svg</file>
+        <file>icons/zoom_cancel.svg</file>
+        <file>icons/zoom_in.svg</file>
+        <file>icons/zoom_out.svg</file>
+    </qresource>
+</RCC>

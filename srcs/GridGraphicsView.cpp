@@ -1,4 +1,4 @@
-#include "gridgraphicsview.h"
+#include "GridGraphicsView.h"
 #include <QWheelEvent>
 #include <QGraphicsEllipseItem>
 #include <QDebug>

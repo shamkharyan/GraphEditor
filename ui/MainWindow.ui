@@ -22,7 +22,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>23</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -94,7 +94,7 @@
     <string>toolBar</string>
    </property>
    <property name="toolButtonStyle">
-    <enum>Qt::ToolButtonTextUnderIcon</enum>
+    <enum>Qt::ToolButtonStyle::ToolButtonTextUnderIcon</enum>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -122,7 +122,7 @@
     </sizepolicy>
    </property>
    <property name="allowedAreas">
-    <set>Qt::BottomDockWidgetArea|Qt::TopDockWidgetArea</set>
+    <set>Qt::DockWidgetArea::BottomDockWidgetArea|Qt::DockWidgetArea::TopDockWidgetArea</set>
    </property>
    <property name="windowTitle">
     <string>Action History</string>
@@ -194,8 +194,8 @@ font-style: italic;
   </action>
   <action name="actionUndo">
    <property name="icon">
-    <iconset resource="resource.qrc">
-     <normaloff>:/Загрузки/undo-svgrepo-com(1).svg</normaloff>:/Загрузки/undo-svgrepo-com(1).svg</iconset>
+    <iconset resource="../resources/resource.qrc">
+     <normaloff>:/icons/undo.svg</normaloff>:/icons/undo.svg</iconset>
    </property>
    <property name="text">
     <string>Undo</string>
@@ -206,8 +206,8 @@ font-style: italic;
   </action>
   <action name="actionRedo">
    <property name="icon">
-    <iconset resource="resource.qrc">
-     <normaloff>:/Загрузки/redo-svgrepo-com.svg</normaloff>:/Загрузки/redo-svgrepo-com.svg</iconset>
+    <iconset resource="../resources/resource.qrc">
+     <normaloff>:/icons/redo.svg</normaloff>:/icons/redo.svg</iconset>
    </property>
    <property name="text">
     <string>Redo</string>
@@ -242,8 +242,8 @@ font-style: italic;
   </action>
   <action name="actionDelete">
    <property name="icon">
-    <iconset resource="resource.qrc">
-     <normaloff>:/Загрузки/delete-svgrepo-com.svg</normaloff>:/Загрузки/delete-svgrepo-com.svg</iconset>
+    <iconset resource="../resources/resource.qrc">
+     <normaloff>:/icons/delete.svg</normaloff>:/icons/delete.svg</iconset>
    </property>
    <property name="text">
     <string>Delete</string>
@@ -267,8 +267,8 @@ font-style: italic;
   </action>
   <action name="actionZoom_In">
    <property name="icon">
-    <iconset resource="resource.qrc">
-     <normaloff>:/Загрузки/zoom-in-svgrepo-com.svg</normaloff>:/Загрузки/zoom-in-svgrepo-com.svg</iconset>
+    <iconset resource="../resources/resource.qrc">
+     <normaloff>:/icons/zoom_in.svg</normaloff>:/icons/zoom_in.svg</iconset>
    </property>
    <property name="text">
     <string>Zoom In</string>
@@ -279,8 +279,8 @@ font-style: italic;
   </action>
   <action name="actionZoom_Out">
    <property name="icon">
-    <iconset resource="resource.qrc">
-     <normaloff>:/Загрузки/zoom-out-svgrepo-com.svg</normaloff>:/Загрузки/zoom-out-svgrepo-com.svg</iconset>
+    <iconset resource="../resources/resource.qrc">
+     <normaloff>:/icons/zoom_out.svg</normaloff>:/icons/zoom_out.svg</iconset>
    </property>
    <property name="text">
     <string>Zoom Out</string>
@@ -291,8 +291,8 @@ font-style: italic;
   </action>
   <action name="actionReset_Zoom">
    <property name="icon">
-    <iconset resource="resource.qrc">
-     <normaloff>:/Загрузки/zoom-cancel-svgrepo-com.svg</normaloff>:/Загрузки/zoom-cancel-svgrepo-com.svg</iconset>
+    <iconset resource="../resources/resource.qrc">
+     <normaloff>:/icons/zoom_cancel.svg</normaloff>:/icons/zoom_cancel.svg</iconset>
    </property>
    <property name="text">
     <string>Reset Zoom</string>
@@ -371,8 +371,8 @@ font-style: italic;
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="resource.qrc">
-     <normaloff>:/Загрузки/icons8-select.svg</normaloff>:/Загрузки/icons8-select.svg</iconset>
+    <iconset resource="../resources/resource.qrc">
+     <normaloff>:/icons/select.svg</normaloff>:/icons/select.svg</iconset>
    </property>
    <property name="text">
     <string>Select</string>
@@ -386,8 +386,8 @@ font-style: italic;
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="resource.qrc">
-     <normaloff>:/Загрузки/add-ellipse-svgrepo-com.svg</normaloff>:/Загрузки/add-ellipse-svgrepo-com.svg</iconset>
+    <iconset resource="../resources/resource.qrc">
+     <normaloff>:/icons/add_node.svg</normaloff>:/icons/add_node.svg</iconset>
    </property>
    <property name="text">
     <string>Add Node</string>
@@ -401,8 +401,8 @@ font-style: italic;
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="resource.qrc">
-     <normaloff>:/Загрузки/vector-line-svgrepo-com.svg</normaloff>:/Загрузки/vector-line-svgrepo-com.svg</iconset>
+    <iconset resource="../resources/resource.qrc">
+     <normaloff>:/icons/add_edge.svg</normaloff>:/icons/add_edge.svg</iconset>
    </property>
    <property name="text">
     <string>Add Edge</string>
@@ -418,7 +418,7 @@ font-style: italic;
   </action>
  </widget>
  <resources>
-  <include location="resource.qrc"/>
+  <include location="../resources/resource.qrc"/>
  </resources>
  <connections/>
 </ui>

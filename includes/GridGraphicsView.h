@@ -1,5 +1,5 @@
-#ifndef GRIDGRAPHICSVIEW_H
-#define GRIDGRAPHICSVIEW_H
+#ifndef GRID_GRAPHICS_VIEW_H
+#define GRID_GRAPHICS_VIEW_H
 
 #include <QGraphicsView>
 
@@ -32,4 +32,4 @@ private:
     QPoint m_lastMousePos;
 };
 
-#endif // GRIDGRAPHICSVIEW_H
+#endif // GRID_GRAPHICS_VIEW_H

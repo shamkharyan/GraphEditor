@@ -1,9 +1,9 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef MAIN_WINDOW_H
+#define MAIN_WINDOW_H
 
 #include <QMainWindow>
-#include "gridgraphicsview.h"
-#include "gridscene.h"
+#include "GridGraphicsView.h"
+#include "GridScene.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -48,4 +48,5 @@ private:
     GridGraphicsView *gridGraphicsView;
     GridScene *gridScene;
 };
-#endif // MAINWINDOW_H
+
+#endif // MAIN_WINDOW_H

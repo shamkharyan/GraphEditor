@@ -1,7 +1,9 @@
-#include "mainwindow.h"
-#include "./ui_mainwindow.h"
-#include "gridscene.h"
-#include "gridgraphicsview.h"
+#include "MainWindow.h"
+#include "../ui/ui_MainWindow.h"
+#include "GridScene.h"
+#include "GridGraphicsView.h"
+#include <QActionGroup>
+
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
