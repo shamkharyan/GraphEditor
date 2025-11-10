@@ -6,25 +6,33 @@
 class EuclideanVertex
 {
 public:
-    EuclideanVertex(int x, int y, const std::string& name = "");
+    EuclideanVertex(float x = 0.f, float y = 0.f, const std::string& name = "");
+    EuclideanVertex(const EuclideanVertex& other);
+    EuclideanVertex(EuclideanVertex&& other) noexcept;
+    EuclideanVertex& operator=(const EuclideanVertex& other);
+    EuclideanVertex& operator=(EuclideanVertex&& other) noexcept;
 
     bool operator==(const EuclideanVertex& other) const;
     bool operator!=(const EuclideanVertex& other) const;
     float distance(const EuclideanVertex& other) const;
 
     // Getters
-    int getX() const;
-    int getY() const;
+    int getID() const;
+    float getX() const;
+    float getY() const;
     const std::string& getName() const;
 
     // Setters
-    void setX(int x);
-    void setY(int y);
+    void setX(float x);
+    void setY(float y);
     void setName(const std::string& name);
 
 private:
-    int m_x;
-    int m_y;
+    static int m_nextId;
+
+    int m_id;
+    float m_x;
+    float m_y;
     std::string m_name;
 };
 

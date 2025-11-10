@@ -44,6 +44,8 @@ qt_add_executable(GraphEditor
     ${RESOURCES}
     includes/model/EuclideanVertex.h
     srcs/model/EuclideanVertex.cpp
+    includes/model/DisjointSet.h
+
 
 )
 
