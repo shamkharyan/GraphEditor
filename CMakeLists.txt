@@ -42,9 +42,12 @@ qt_add_executable(GraphEditor
     ${HEADERS}    # Add headers here for MOC processing
     ${UI_FILES}
     ${RESOURCES}
-    includes/model/EuclideanVertex.h
-    srcs/model/EuclideanVertex.cpp
+    includes/model/Vertex.h
+    srcs/model/Vertex.cpp
     includes/model/DisjointSet.h
+    includes/model/Edge.h
+    srcs/model/Edge.cpp
+    includes/model/Graph.h
 
 
 )
