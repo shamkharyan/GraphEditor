@@ -1,20 +1,16 @@
-#ifndef EUCLIDEAN_VERTEX_H
-#define EUCLIDEAN_VERTEX_H
+#ifndef VERTEX_H
+#define VERTEX_H
 
 #include <string>
 
-class EuclideanVertex
+class Vertex
 {
 public:
-    EuclideanVertex(float x = 0.f, float y = 0.f, const std::string& name = "");
-    EuclideanVertex(const EuclideanVertex& other);
-    EuclideanVertex(EuclideanVertex&& other) noexcept;
-    EuclideanVertex& operator=(const EuclideanVertex& other);
-    EuclideanVertex& operator=(EuclideanVertex&& other) noexcept;
+    Vertex(int id, float x = 0.f, float y = 0.f, const std::string& name = "");
 
-    bool operator==(const EuclideanVertex& other) const;
-    bool operator!=(const EuclideanVertex& other) const;
-    float distance(const EuclideanVertex& other) const;
+    bool operator==(const Vertex& other) const;
+    bool operator!=(const Vertex& other) const;
+    float distance(const Vertex& other) const;
 
     // Getters
     int getID() const;
@@ -28,12 +24,10 @@ public:
     void setName(const std::string& name);
 
 private:
-    static int m_nextId;
-
     int m_id;
     float m_x;
     float m_y;
     std::string m_name;
 };
 
-#endif // EUCLIDEAN_VERTEX_H
+#endif // VERTEX_H

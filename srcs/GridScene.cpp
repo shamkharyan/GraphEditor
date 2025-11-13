@@ -2,6 +2,7 @@
 #include <QtMath>
 #include <QDebug>
 #include <QGraphicsView>
+#include <QGraphicsTextItem>
 
 GridScene::GridScene(QObject *parent)
     : QGraphicsScene(parent)
@@ -46,6 +47,53 @@ void GridScene::drawBackground(QPainter *painter, const QRectF &rect)
 
         for (double y = startY; y < rect.bottom(); y += gridSize)
             painter->drawLine(QPointF(rect.left(), y), QPointF(rect.right(), y));
+    }
+}
+
+void GridScene::drawGraph(const Graph& graph)
+{
+    clear(); // Remove any previous items before drawing
+
+    // 🎨 Style setup
+    QPen edgePen(Qt::black);
+    edgePen.setWidth(2);
+
+    QBrush vertexBrush(QColor(100, 180, 255)); // blueish
+    QPen vertexPen(Qt::black);
+    vertexPen.setWidth(1);
+
+    const int radius = 10;
+
+    // 🕸 Draw edges first (so they appear under vertices)
+    for (const auto& edge : graph.getEdges())
+    {
+        const auto& vertices = graph.getVertices();
+        if (vertices.find(edge.second.getStartVertexID()) == vertices.end() ||
+            vertices.find(edge.second.getEndVertexID()) == vertices.end())
+            continue;
+
+        const auto& v1 = vertices.at(edge.second.getStartVertexID());
+        const auto& v2 = vertices.at(edge.second.getEndVertexID());
+
+        addLine(v1.getX(), v1.getY(), v2.getX(), v2.getY(), edgePen);
+    }
+
+    // ⚫ Draw vertices
+    for (const auto& [id, vertex] : graph.getVertices())
+    {
+        auto circle = addEllipse(
+            vertex.getX() - radius,
+            vertex.getY() - radius,
+            radius * 2,
+            radius * 2,
+            vertexPen,
+            vertexBrush
+            );
+
+        // Optional: make vertex identifiable by text label (ID)
+        auto label = addText(QString::number(id));
+        label->setDefaultTextColor(Qt::black);
+        label->setPos(vertex.getX() + radius + 2, vertex.getY() - radius - 2);
     }
 }
 

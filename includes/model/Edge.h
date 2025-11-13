@@ -6,12 +6,7 @@
 class Edge
 {
 public:
-    Edge(int startVertexId, int endVertexId, float weight, const std::string& name = "");
-
-    Edge(const Edge& other);
-    Edge(Edge&& other) noexcept;
-    Edge& operator=(const Edge& other);
-    Edge& operator=(Edge&& other) noexcept;
+    Edge(int id, int startVertexId, int endVertexId, float weight, const std::string& name = "");
 
     bool operator==(const Edge& other) const;
     bool operator!=(const Edge& other) const;
@@ -29,10 +24,7 @@ public:
     void setWeight(float weight);
     void setName(const std::string& name);
 
-
 private:
-    static int m_nextId;
-
     int m_id;
     int m_startVertexId;
     int m_endVertexId;

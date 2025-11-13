@@ -1,38 +1,45 @@
-#ifndef EUCLIDEAN_GRAPH_H
-#define EUCLIDEAN_GRAPH_H
+#ifndef GRAPH_H
+#define GRAPH_H
 
 #include "Vertex.h"
 #include "Edge.h"
 
 #include <unordered_map>
+#include <unordered_set>
 #include <string>
 
-class EuclideanGraph
+class Graph
 {
 public:
-    void addVertex(float x, float y, const std::string& name = "");
+    using VertexMap = std::unordered_map<int, Vertex>;
+    using EdgeMap = std::unordered_map<int, Edge>;
+    using ConnectedEdgesMap = std::unordered_map<int, std::unordered_set<int>>;
+
+    int addVertex(float x, float y, const std::string& name = "");
+    int addVertexWithID(int id, float x, float y, const std::string& name = "");
     void removeVertex(int id);
-    void addEdge(int startVertexId, int endVertexId, const std::string& name = "");
+    int addEdge(int startVertexId, int endVertexId, float weight, const std::string& name = "");
+    int addEdgeWithID(int id, int startVertexId, int endVertexId, float weight, const std::string& name = "");
     void removeEdge(int id);
+
+    // Getters
+    const VertexMap& getVertices() const;
+    const EdgeMap& getEdges() const;
+    const ConnectedEdgesMap& getConnectedEdgesIds() const;
 
 private:
 
     // vertexId -> Vertex
-    std::unordered_map<int, Vertex> m_verticies;
+    VertexMap m_vertices;
 
     // edgeId -> Edge
-    std::unordered_map<int, Edge> m_edges;
+    EdgeMap m_edges;
 
-    // vertexId -> connected Edges id
-    std::unordered_map<int, std::unordered_map<int, int>> m_connectedEdges;
+    // vertexId -> set of connected edgeIds
+    ConnectedEdgesMap m_connectedEdgesIds;
 
-    // vertexId -> connected Verticies id
-    // std::unordered_map<int, std::unordered_map<int, int>> m_connectedVerticies;
-
-    // 0 -> {01}
-    // 1 -> {01,12}
-    // 2 -> {12}
-    // 3 -> {}
+    int m_nextEdgeId = 0;
+    int m_nextVertexId = 0;
 };
 
-#endif // EUCLIDEAN_GRAPH_H
+#endif // GRAPH_H

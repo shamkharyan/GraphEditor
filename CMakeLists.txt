@@ -48,6 +48,16 @@ qt_add_executable(GraphEditor
     includes/model/Edge.h
     srcs/model/Edge.cpp
     includes/model/Graph.h
+    srcs/model/Graph.cpp
+    includes/algorithms/GraphAlgorithms.h
+    srcs/algorithms/GraphAlgorithms.cpp
+    includes/GraphEditor.h
+    srcs/GraphEditor.cpp
+    includes/core/actions/AAction.h
+    includes/core/actions/AddVertexAction.h
+    srcs/core/actions/AddVertexAction.cpp
+    includes/core/UndoManager.h
+    srcs/core/UndoManager.cpp
 
 
 )

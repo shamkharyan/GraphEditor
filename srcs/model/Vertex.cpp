@@ -2,48 +2,9 @@
 
 #include <cmath>
 
-int Vertex::m_nextId = 0;
-
-Vertex::Vertex(float x, float y, const std::string& name) :
-    m_x(x), m_y(y), m_name(name)
+Vertex::Vertex(int id, float x, float y, const std::string& name) :
+    m_id(id), m_x(x), m_y(y), m_name(name)
 {
-    m_id = m_nextId++;
-}
-
-Vertex::Vertex(const Vertex& other) :
-    m_x(other.m_x), m_y(other.m_y), m_name(other.m_name)
-{
-    m_id = m_nextId++;
-}
-
-Vertex::Vertex(Vertex&& other) noexcept :
-    m_x(other.m_x), m_y(other.m_y), m_name(std::move(other.m_name))
-{
-    m_id = m_nextId++;
-}
-
-Vertex& Vertex::operator=(const Vertex& other)
-{
-    if (this == &other)
-        return *this;
-
-    m_x = other.m_x;
-    m_y = other.m_y;
-    m_name = other.m_name;
-
-    return *this;
-}
-
-Vertex& Vertex::operator=(Vertex&& other) noexcept
-{
-    if (this == &other)
-        return *this;
-
-    m_x = other.m_x;
-    m_y = other.m_y;
-    m_name = std::move(other.m_name);
-
-    return *this;
 }
 
 bool Vertex::operator==(const Vertex& other) const
