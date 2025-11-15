@@ -18,9 +18,15 @@ public:
     int addVertex(float x, float y, const std::string& name = "");
     int addVertexWithID(int id, float x, float y, const std::string& name = "");
     void removeVertex(int id);
+    void moveVertex(int id, float x, float y);
+    void renameVertex(int id, const std::string& name);
+    const Vertex& getVertex(int id) const;
     int addEdge(int startVertexId, int endVertexId, float weight, const std::string& name = "");
     int addEdgeWithID(int id, int startVertexId, int endVertexId, float weight, const std::string& name = "");
     void removeEdge(int id);
+    void reweightEdge(int id, float weight);
+    void renameEdge(int id, const std::string& name);
+    const Edge& getEdge(int id) const;
 
     // Getters
     const VertexMap& getVertices() const;

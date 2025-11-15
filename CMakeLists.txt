@@ -58,6 +58,14 @@ qt_add_executable(GraphEditor
     srcs/core/actions/AddVertexAction.cpp
     includes/core/UndoManager.h
     srcs/core/UndoManager.cpp
+    includes/core/actions/AddEdgeAction.h
+    srcs/core/actions/AddEdgeAction.cpp
+    includes/core/actions/RemoveVertexAction.h
+    srcs/core/actions/RemoveVertexAction.cpp
+    includes/core/actions/RemoveEdgeAction.h
+    srcs/core/actions/RemoveEdgeAction.cpp
+    includes/view/VertexItem.h
+    srcs/view/VertexItem.cpp
 
 
 )

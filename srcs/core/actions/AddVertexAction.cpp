@@ -32,7 +32,6 @@ bool AddVertexAction::undoAction()
 
     assert(m_vertId != -1);
     m_graph.removeVertex(m_vertId);
-
     m_completed = false;
 
     return true;
