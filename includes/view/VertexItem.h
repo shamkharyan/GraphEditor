@@ -1,20 +1,29 @@
-#ifndef VERTEX_ITEM_H
-#define VERTEX_ITEM_H
+#ifndef VERTEXITEM_H
+#define VERTEXITEM_H
 
 #include <QGraphicsEllipseItem>
 #include <QGraphicsTextItem>
-#include <QString>
 
 class VertexItem : public QGraphicsEllipseItem
 {
 public:
-    VertexItem(int id, const QString& name, QGraphicsItem* parent = nullptr);
+    VertexItem(int id, float x, float y, const QString& label, QGraphicsItem* parent = nullptr);
 
-    int getID() const;
+    int getVertexId() const { return m_vertexId; }
+    void updateLabel(const QString& label);
+
+    enum { Type = UserType + 1 };
+    int type() const override { return Type; }
+
+protected:
+    QVariant itemChange(GraphicsItemChange change, const QVariant& value) override;
+    void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent* event) override;
 
 private:
-    int m_id;
+    int m_vertexId;
     QGraphicsTextItem* m_label;
+    bool m_isHovered = false;
 };
 
-#endif // VERTEX_ITEM_H
+#endif // VERTEXITEM_H

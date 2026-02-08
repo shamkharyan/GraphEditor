@@ -1,22 +1,24 @@
 #include "GridGraphicsView.h"
 #include <QWheelEvent>
-#include <QGraphicsEllipseItem>
-#include <QDebug>
 #include <QScrollBar>
 
-GridGraphicsView::GridGraphicsView(QWidget* parent) : QGraphicsView(parent) {}
+GridGraphicsView::GridGraphicsView(QWidget* parent)
+    : QGraphicsView(parent)
+{
+}
 
 void GridGraphicsView::zoom(double scaleFactor)
 {
-    constexpr double maxScale = 5;
+    constexpr double maxScale = 5.0;
     constexpr double minScale = 0.2;
 
     double currentScale = transform().m11();
-    if (scaleFactor > 1 && currentScale < maxScale)
+
+    if (scaleFactor > 1.0 && currentScale < maxScale)
     {
         scale(scaleFactor, scaleFactor);
     }
-    else if (scaleFactor < 1 && currentScale > minScale)
+    else if (scaleFactor < 1.0 && currentScale > minScale)
     {
         scale(scaleFactor, scaleFactor);
     }
@@ -35,10 +37,11 @@ void GridGraphicsView::wheelEvent(QWheelEvent* event)
         zoom(scaleFactor);
     else if (event->angleDelta().y() < 0)
         zoom(1.0 / scaleFactor);
+
     event->accept();
 }
 
-void GridGraphicsView::mousePressEvent(QMouseEvent *event)
+void GridGraphicsView::mousePressEvent(QMouseEvent* event)
 {
     if (event->button() == Qt::MiddleButton)
     {
@@ -53,7 +56,7 @@ void GridGraphicsView::mousePressEvent(QMouseEvent *event)
     }
 }
 
-void GridGraphicsView::mouseMoveEvent(QMouseEvent *event)
+void GridGraphicsView::mouseMoveEvent(QMouseEvent* event)
 {
     if (m_middleMousePressed)
     {
@@ -71,11 +74,12 @@ void GridGraphicsView::mouseMoveEvent(QMouseEvent *event)
     }
 }
 
-void GridGraphicsView::mouseReleaseEvent(QMouseEvent *event)
+void GridGraphicsView::mouseReleaseEvent(QMouseEvent* event)
 {
     if (event->button() == Qt::MiddleButton)
     {
         m_middleMousePressed = false;
+
         if (m_mode == Mode::Select)
             unsetCursor();
         else
@@ -88,5 +92,3 @@ void GridGraphicsView::mouseReleaseEvent(QMouseEvent *event)
         QGraphicsView::mouseReleaseEvent(event);
     }
 }
-
-

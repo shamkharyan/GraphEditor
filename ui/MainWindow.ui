@@ -193,10 +193,6 @@ font-style: italic;
    </property>
   </action>
   <action name="actionUndo">
-   <property name="icon">
-    <iconset resource="../resources/resource.qrc">
-     <normaloff>:/icons/undo.svg</normaloff>:/icons/undo.svg</iconset>
-   </property>
    <property name="text">
     <string>Undo</string>
    </property>
@@ -205,10 +201,6 @@ font-style: italic;
    </property>
   </action>
   <action name="actionRedo">
-   <property name="icon">
-    <iconset resource="../resources/resource.qrc">
-     <normaloff>:/icons/redo.svg</normaloff>:/icons/redo.svg</iconset>
-   </property>
    <property name="text">
     <string>Redo</string>
    </property>
@@ -241,10 +233,6 @@ font-style: italic;
    </property>
   </action>
   <action name="actionDelete">
-   <property name="icon">
-    <iconset resource="../resources/resource.qrc">
-     <normaloff>:/icons/delete.svg</normaloff>:/icons/delete.svg</iconset>
-   </property>
    <property name="text">
     <string>Delete</string>
    </property>
@@ -266,10 +254,6 @@ font-style: italic;
    </property>
   </action>
   <action name="actionZoom_In">
-   <property name="icon">
-    <iconset resource="../resources/resource.qrc">
-     <normaloff>:/icons/zoom_in.svg</normaloff>:/icons/zoom_in.svg</iconset>
-   </property>
    <property name="text">
     <string>Zoom In</string>
    </property>
@@ -278,10 +262,6 @@ font-style: italic;
    </property>
   </action>
   <action name="actionZoom_Out">
-   <property name="icon">
-    <iconset resource="../resources/resource.qrc">
-     <normaloff>:/icons/zoom_out.svg</normaloff>:/icons/zoom_out.svg</iconset>
-   </property>
    <property name="text">
     <string>Zoom Out</string>
    </property>
@@ -290,10 +270,6 @@ font-style: italic;
    </property>
   </action>
   <action name="actionReset_Zoom">
-   <property name="icon">
-    <iconset resource="../resources/resource.qrc">
-     <normaloff>:/icons/zoom_cancel.svg</normaloff>:/icons/zoom_cancel.svg</iconset>
-   </property>
    <property name="text">
     <string>Reset Zoom</string>
    </property>
@@ -370,10 +346,6 @@ font-style: italic;
    <property name="checked">
     <bool>true</bool>
    </property>
-   <property name="icon">
-    <iconset resource="../resources/resource.qrc">
-     <normaloff>:/icons/select.svg</normaloff>:/icons/select.svg</iconset>
-   </property>
    <property name="text">
     <string>Select</string>
    </property>
@@ -385,10 +357,6 @@ font-style: italic;
    <property name="checkable">
     <bool>true</bool>
    </property>
-   <property name="icon">
-    <iconset resource="../resources/resource.qrc">
-     <normaloff>:/icons/add_node.svg</normaloff>:/icons/add_node.svg</iconset>
-   </property>
    <property name="text">
     <string>Add Node</string>
    </property>
@@ -399,10 +367,6 @@ font-style: italic;
   <action name="actionAdd_Edge">
    <property name="checkable">
     <bool>true</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="../resources/resource.qrc">
-     <normaloff>:/icons/add_edge.svg</normaloff>:/icons/add_edge.svg</iconset>
    </property>
    <property name="text">
     <string>Add Edge</string>
@@ -417,8 +381,6 @@ font-style: italic;
    </property>
   </action>
  </widget>
- <resources>
-  <include location="../resources/resource.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

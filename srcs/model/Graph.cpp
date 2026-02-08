@@ -5,6 +5,15 @@
 #include <stdexcept>
 #include <unordered_set>
 
+void Graph::clear()
+{
+    m_vertices.clear();
+    m_edges.clear();
+    m_connectedEdgesIds.clear();
+    m_nextEdgeId = 0;
+    m_nextVertexId = 0;
+}
+
 int Graph::addVertex(float x, float y, const std::string& name)
 {
     int id = m_nextVertexId++;

@@ -1,14 +1,14 @@
-#ifndef GRID_GRAPHICS_VIEW_H
-#define GRID_GRAPHICS_VIEW_H
+#ifndef GRIDGRAPHICSVIEW_H
+#define GRIDGRAPHICSVIEW_H
 
 #include <QGraphicsView>
+#include <QMouseEvent>
+#include <QWheelEvent>
 
 class GridGraphicsView : public QGraphicsView
 {
     Q_OBJECT
 public:
-    explicit GridGraphicsView(QWidget* parent = nullptr);
-
     enum class Mode
     {
         Select,
@@ -16,15 +16,15 @@ public:
         AddEdge
     };
 
+    explicit GridGraphicsView(QWidget* parent = nullptr);
     void zoom(double scaleFactor);
     void setMode(Mode mode);
 
 protected:
     void wheelEvent(QWheelEvent* event) override;
-
-    void mousePressEvent(QMouseEvent *event) override;
-    void mouseMoveEvent(QMouseEvent *event) override;
-    void mouseReleaseEvent(QMouseEvent *event) override;
+    void mousePressEvent(QMouseEvent* event) override;
+    void mouseMoveEvent(QMouseEvent* event) override;
+    void mouseReleaseEvent(QMouseEvent* event) override;
 
 private:
     Mode m_mode = Mode::Select;
@@ -32,4 +32,4 @@ private:
     QPoint m_lastMousePos;
 };
 
-#endif // GRID_GRAPHICS_VIEW_H
+#endif // GRIDGRAPHICSVIEW_H

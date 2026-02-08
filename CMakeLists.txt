@@ -67,6 +67,9 @@ qt_add_executable(GraphEditor
     includes/view/VertexItem.h
     srcs/view/VertexItem.cpp
 
+    includes/view/EdgeItem.h
+    srcs/view/EdgeItem.cpp
+
 
 )
 
