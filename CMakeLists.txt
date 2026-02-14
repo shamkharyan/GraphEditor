@@ -17,7 +17,7 @@ set(UI_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/ui)
 set(RES_DIR     ${CMAKE_CURRENT_SOURCE_DIR}/resources)
 
 # Set UI files
-set(UI_FILES ${UI_DIR}/mainwindow.ui)
+set(UI_FILES ${UI_DIR}/MainWindow.ui)
 
 # Set SOURCE files (cpp files)
 set(SOURCES
@@ -69,6 +69,8 @@ qt_add_executable(GraphEditor
 
     includes/view/EdgeItem.h
     srcs/view/EdgeItem.cpp
+    includes/algorithms/Triangulation.h
+    srcs/algorithms/Triangulation.cpp
 
 
 )

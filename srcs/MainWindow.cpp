@@ -2,6 +2,8 @@
 #include "../ui/ui_MainWindow.h"
 #include "GridScene.h"
 #include "GridGraphicsView.h"
+#include "algorithms/Triangulation.h"
+#include "algorithms/GraphAlgorithms.h"
 #include <QActionGroup>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -17,6 +19,7 @@
 #include <random>
 #include <cmath>
 #include <set>
+#include <functional>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -157,6 +160,33 @@ void MainWindow::on_actionDelete_triggered()
     QApplication::postEvent(gridScene, deleteEvent);
 }
 
+void MainWindow::on_actionDelaunay_Triangulation_triggered()
+{
+    const Graph& current = gridScene->getGraph();
+
+    if (current.getVertices().size() < 3)
+    {
+        QMessageBox::warning(this, "Delaunay Triangulation",
+                             "Need at least 3 vertices to triangulate.");
+        return;
+    }
+
+    try
+    {
+        Graph triangulated = DelaunayTriangulation::buildTriangulatedGraph(current);
+        gridScene->drawGraph(triangulated);
+
+        int edgeCount = static_cast<int>(triangulated.getEdges().size());
+        int vertexCount = static_cast<int>(triangulated.getVertices().size());
+        logAction(QString("Delaunay triangulation: %1 vertices, %2 edges")
+                      .arg(vertexCount).arg(edgeCount));
+    }
+    catch (const std::exception& e)
+    {
+        QMessageBox::critical(this, "Triangulation Error", e.what());
+    }
+}
+
 void MainWindow::on_actionGenerate_Random_Graph_triggered()
 {
     bool ok;
@@ -164,18 +194,21 @@ void MainWindow::on_actionGenerate_Random_Graph_triggered()
         this,
         "Generate Random Graph",
         "Number of vertices:",
-        10, 3, 100, 1, &ok
+        10, 3, 5000, 1, &ok
         );
 
     if (!ok) return;
 
+    int maxPossibleEdges = numVertices * (numVertices - 1);
+    int defaultEdges = std::min(numVertices * 2, maxPossibleEdges);
+
     int numEdges = QInputDialog::getInt(
         this,
         "Generate Random Graph",
-        QString("Number of edges (max %1):").arg(numVertices * (numVertices - 1)),
-        numVertices,
+        QString("Number of edges (max %1):").arg(maxPossibleEdges),
+        defaultEdges,
         0,
-        numVertices * (numVertices - 1),
+        maxPossibleEdges,
         1,
         &ok
         );
@@ -188,19 +221,18 @@ void MainWindow::on_actionGenerate_Random_Graph_triggered()
     // Random number generator
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_real_distribution<> disX(-500, 500);
-    std::uniform_real_distribution<> disY(-500, 500);
+
+    // Random distribution for positions - larger area for more vertices
+    double areaSize = 500.0 + (numVertices / 10.0) * 50.0; // Scale with vertex count
+    std::uniform_real_distribution<> disX(-areaSize, areaSize);
+    std::uniform_real_distribution<> disY(-areaSize, areaSize);
     std::uniform_real_distribution<> disWeight(0.1, 10.0);
 
-    // Create vertices in a circular pattern for better visualization
-    const double radius = 300;
-    const double angleStep = 2 * M_PI / numVertices;
-
+    // Create vertices at random positions
     for (int i = 0; i < numVertices; ++i)
     {
-        double angle = i * angleStep;
-        double x = radius * cos(angle);
-        double y = radius * sin(angle);
+        double x = disX(gen);
+        double y = disY(gen);
         newGraph.addVertex(x, y, std::to_string(i));
     }
 
@@ -210,10 +242,14 @@ void MainWindow::on_actionGenerate_Random_Graph_triggered()
 
     std::uniform_int_distribution<> disVertex(0, numVertices - 1);
 
-    while (edgesCreated < numEdges)
+    int maxAttempts = numEdges * 10; // Prevent infinite loop
+    int attempts = 0;
+
+    while (edgesCreated < numEdges && attempts < maxAttempts)
     {
         int v1 = disVertex(gen);
         int v2 = disVertex(gen);
+        attempts++;
 
         if (v1 == v2) continue;
 
@@ -415,4 +451,131 @@ void MainWindow::on_actionDark_Mode_triggered(bool checked)
         gridScene->setBackgroundBrush(QBrush(Qt::white));
         logAction("Dark mode disabled");
     }
+}
+
+// ---------------------------------------------------------------------------
+// MST helpers
+// ---------------------------------------------------------------------------
+
+// Applies an MST result back to the scene.
+static void applyMST(GridScene* scene, MainWindow* win,
+                     std::function<Graph(const Graph&)> algo,
+                     const QString& algoName)
+{
+    const Graph& current = scene->getGraph();
+
+    if (current.getVertices().size() < 2)
+    {
+        QMessageBox::warning(win, algoName, "Need at least 2 vertices.");
+        return;
+    }
+    if (current.getEdges().empty())
+    {
+        QMessageBox::warning(win, algoName, "Graph has no edges. Add edges first or use EMST.");
+        return;
+    }
+
+    try
+    {
+        Graph mst = algo(current);
+        scene->drawGraph(mst);
+        /*win->logAction(QString("%1: %2 vertices, %3 edges")
+                           .arg(algoName)
+                           .arg((int)mst.getVertices().size())
+                           .arg((int)mst.getEdges().size()));*/
+    }
+    catch (const std::exception& e)
+    {
+        QMessageBox::critical(win, algoName + " Error", e.what());
+    }
+}
+
+// Builds EMST: Delaunay triangulation → MST on the triangulated graph.
+static Graph buildEMST(const Graph& graph, std::function<Graph(const Graph&)> mstAlgo)
+{
+    Graph triangulated = DelaunayTriangulation::buildTriangulatedGraph(graph);
+    return mstAlgo(triangulated);
+}
+
+static void applyEMST(GridScene* scene, MainWindow* win,
+                      std::function<Graph(const Graph&)> mstAlgo,
+                      const QString& algoName)
+{
+    const Graph& current = scene->getGraph();
+
+    if (current.getVertices().size() < 3)
+    {
+        QMessageBox::warning(win, algoName, "Need at least 3 vertices for EMST.");
+        return;
+    }
+
+    // Warn if existing edges will be ignored
+    if (!current.getEdges().empty())
+    {
+        auto btn = QMessageBox::warning(
+            win, algoName,
+            QString("The graph has %1 edge(s).\n"
+                    "EMST ignores existing edges and works only on vertex positions.\n"
+                    "Continue?").arg((int)current.getEdges().size()),
+            QMessageBox::Ok | QMessageBox::Cancel);
+        if (btn != QMessageBox::Ok)
+            return;
+    }
+
+    try
+    {
+        // Strip edges: copy only vertices
+        Graph verticesOnly;
+        for (const auto& [id, v] : current.getVertices())
+            verticesOnly.addVertexWithID(id, v.getX(), v.getY(), v.getName());
+
+        Graph emst = buildEMST(verticesOnly, mstAlgo);
+        scene->drawGraph(emst);
+        /*win->logAction(QString("%1: %2 vertices, %3 edges")
+                           .arg(algoName)
+                           .arg((int)emst.getVertices().size())
+                           .arg((int)emst.getEdges().size()));*/
+    }
+    catch (const std::exception& e)
+    {
+        QMessageBox::critical(win, algoName + " Error", e.what());
+    }
+}
+
+// ---------------------------------------------------------------------------
+// MST slots
+// ---------------------------------------------------------------------------
+
+void MainWindow::on_actionBuild_MST_Kruskal_triggered()
+{
+    applyMST(gridScene, this, GraphAlgorithms::buildKruskalMST, "MST (Kruskal)");
+}
+
+void MainWindow::on_actionBuild_MST_Prim_triggered()
+{
+    applyMST(gridScene, this, GraphAlgorithms::buildPrimMST, "MST (Prim)");
+}
+
+void MainWindow::on_actionBuild_MST_Auto_triggered()
+{
+    applyMST(gridScene, this, GraphAlgorithms::buildAutoMST, "MST (Auto)");
+}
+
+// ---------------------------------------------------------------------------
+// EMST slots
+// ---------------------------------------------------------------------------
+
+void MainWindow::on_actionBuild_EMST_Kruskal_triggered()
+{
+    applyEMST(gridScene, this, GraphAlgorithms::buildKruskalMST, "EMST (Kruskal)");
+}
+
+void MainWindow::on_actionBuild_EMST_Prim_triggered()
+{
+    applyEMST(gridScene, this, GraphAlgorithms::buildPrimMST, "EMST (Prim)");
+}
+
+void MainWindow::on_actionBuild_EMST_Auto_triggered()
+{
+    applyEMST(gridScene, this, GraphAlgorithms::buildAutoMST, "EMST (Auto)");
 }

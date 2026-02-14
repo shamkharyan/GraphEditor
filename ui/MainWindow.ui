@@ -82,6 +82,27 @@
      <string>Graph</string>
     </property>
     <addaction name="actionGenerate_Random_Graph"/>
+    <addaction name="separator"/>
+    <addaction name="actionDelaunay_Triangulation"/>
+    <addaction name="separator"/>
+    <addaction name="menuMST"/>
+    <addaction name="menuEMST"/>
+   </widget>
+   <widget class="QMenu" name="menuMST">
+    <property name="title">
+     <string>MST</string>
+    </property>
+    <addaction name="actionBuild_MST_Kruskal"/>
+    <addaction name="actionBuild_MST_Prim"/>
+    <addaction name="actionBuild_MST_Auto"/>
+   </widget>
+   <widget class="QMenu" name="menuEMST">
+    <property name="title">
+     <string>EMST</string>
+    </property>
+    <addaction name="actionBuild_EMST_Kruskal"/>
+    <addaction name="actionBuild_EMST_Prim"/>
+    <addaction name="actionBuild_EMST_Auto"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -379,8 +400,50 @@ font-style: italic;
    <property name="text">
     <string>Generate Random Graph</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+G</string>
+   </property>
+  </action>
+  <action name="actionDelaunay_Triangulation">
+   <property name="text">
+    <string>Delaunay Triangulation</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+T</string>
+   </property>
+  </action>
+  <action name="actionBuild_MST_Kruskal">
+   <property name="text">
+    <string>Build MST (Kruskal)</string>
+   </property>
+  </action>
+  <action name="actionBuild_MST_Prim">
+   <property name="text">
+    <string>Build MST (Prim)</string>
+   </property>
+  </action>
+  <action name="actionBuild_MST_Auto">
+   <property name="text">
+    <string>Build MST (Auto)</string>
+   </property>
+  </action>
+  <action name="actionBuild_EMST_Kruskal">
+   <property name="text">
+    <string>Build EMST (Kruskal)</string>
+   </property>
+  </action>
+  <action name="actionBuild_EMST_Prim">
+   <property name="text">
+    <string>Build EMST (Prim)</string>
+   </property>
+  </action>
+  <action name="actionBuild_EMST_Auto">
+   <property name="text">
+    <string>Build EMST (Auto)</string>
+   </property>
   </action>
  </widget>
  <resources/>
  <connections/>
 </ui>
+

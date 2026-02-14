@@ -1,7 +1,5 @@
 #include "algorithms/GraphAlgorithms.h"
-#include "model/Graph.h"
 #include "model/DisjointSet.h"
-
 #include <vector>
 #include <algorithm>
 #include <unordered_set>
@@ -15,13 +13,14 @@ Graph GraphAlgorithms::buildKruskalMST(const Graph& graph)
 
     for (const auto& [id, vertex] : graph.getVertices())
     {
-        mst.addVertex(vertex.getX(), vertex.getY(), vertex.getName());
+        mst.addVertexWithID(id, vertex.getX(), vertex.getY(), vertex.getName());
         set.makeSet(id);
     }
 
     const auto& edgesMap = graph.getEdges();
     std::vector<Edge> edges;
     edges.reserve(edgesMap.size());
+
     for (const auto& [id, edge] : edgesMap)
         edges.push_back(edge);
 
@@ -48,7 +47,6 @@ Graph GraphAlgorithms::buildKruskalMST(const Graph& graph)
 Graph GraphAlgorithms::buildPrimMST(const Graph& graph)
 {
     Graph mst;
-
     const auto& vertices = graph.getVertices();
     const auto& edges = graph.getEdges();
     const auto& connectedEdges = graph.getConnectedEdgesIds();
@@ -59,7 +57,7 @@ Graph GraphAlgorithms::buildPrimMST(const Graph& graph)
 
     for (const auto& [id, vertex] : vertices)
     {
-        mst.addVertex(vertex.getX(), vertex.getY(), vertex.getName());
+        mst.addVertexWithID(id, vertex.getX(), vertex.getY(), vertex.getName());
         cheapestCost[id] = std::numeric_limits<float>::max();
         cheapestEdge[id] = -1;
         unexploredVertices.insert(id);
@@ -75,6 +73,7 @@ Graph GraphAlgorithms::buildPrimMST(const Graph& graph)
     {
         int currentVertex = -1;
         float minCost = std::numeric_limits<float>::max();
+
         for (int v : unexploredVertices)
         {
             if (cheapestCost[v] < minCost)
@@ -127,3 +126,17 @@ Graph GraphAlgorithms::buildPrimMST(const Graph& graph)
     return mst;
 }
 
+Graph GraphAlgorithms::buildAutoMST(const Graph& graph)
+{
+    const std::size_t V = graph.getVertices().size();
+    const std::size_t E = graph.getEdges().size();
+
+    // Kruskal is O(E log E); Prim with adjacency list is O(E log V).
+    // For dense graphs (E >> V) Prim tends to be faster in practice.
+    // Simple heuristic: if E >= V*(V-1)/4 (roughly 50 % of a complete graph) use Prim.
+    const std::size_t threshold = (V * (V - 1)) / 4;
+    if (E >= threshold)
+        return buildPrimMST(graph);
+    else
+        return buildKruskalMST(graph);
+}

@@ -33,6 +33,15 @@ private slots:
     void on_actionSnap_to_Grid_triggered(bool checked);
     void on_actionDelete_triggered();
     void on_actionGenerate_Random_Graph_triggered();
+    void on_actionDelaunay_Triangulation_triggered();
+    // MST
+    void on_actionBuild_MST_Kruskal_triggered();
+    void on_actionBuild_MST_Prim_triggered();
+    void on_actionBuild_MST_Auto_triggered();
+    // EMST
+    void on_actionBuild_EMST_Kruskal_triggered();
+    void on_actionBuild_EMST_Prim_triggered();
+    void on_actionBuild_EMST_Auto_triggered();
     void on_actionNew_File_triggered();
     void on_actionSave_triggered();
     void on_actionSave_As_triggered();

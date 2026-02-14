@@ -1,4 +1,5 @@
 #include "GridScene.h"
+#include "model/Vertex.h"
 #include "view/VertexItem.h"
 #include "view/EdgeItem.h"
 #include <QGraphicsSceneMouseEvent>
@@ -9,7 +10,11 @@
 #include <QDebug>
 #include <QtMath>
 #include <QMessageBox>
-#include <QWidget>
+#include <cmath>
+
+// ============================================================================
+// GridScene Implementation
+// ============================================================================
 
 GridScene::GridScene(QObject* parent)
     : QGraphicsScene(parent)
@@ -215,11 +220,17 @@ void GridScene::completeEdgeTo(VertexItem* vertex)
     int startId = m_edgeStartVertex->getVertexId();
     int endId = vertex->getVertexId();
 
-    // Ask for weight
+    // Default weight = Euclidean distance between the two vertices
+    const Vertex& va = m_graph.getVertex(startId);
+    const Vertex& vb = m_graph.getVertex(endId);
+    float dx = va.getX() - vb.getX();
+    float dy = va.getY() - vb.getY();
+    double defaultWeight = std::sqrt(dx * dx + dy * dy);
+
     bool ok;
     double weight = QInputDialog::getDouble(
         nullptr, "Edge Weight", "Enter edge weight:",
-        1.0, -1000.0, 1000.0, 1, &ok);
+        defaultWeight, -1000000.0, 1000000.0, 2, &ok);
 
     if (ok)
     {
@@ -278,60 +289,65 @@ void GridScene::deleteSelected()
     if (selected.isEmpty())
         return;
 
-    QStringList deletedItems;
+    // --- Pass 1: collect vertex IDs and explicitly selected edge IDs ---
+    std::unordered_set<int> vertexIds;
+    std::unordered_set<int> edgeIds;
 
     for (QGraphicsItem* item : selected)
     {
-        VertexItem* vertexItem = dynamic_cast<VertexItem*>(item);
-        EdgeItem* edgeItem = dynamic_cast<EdgeItem*>(item);
-
-        if (vertexItem)
-        {
-            int id = vertexItem->getVertexId();
-
-            // Remove all connected edges
-            auto connectedEdges = m_graph.getConnectedEdgesIds().at(id);
-            for (int edgeId : connectedEdges)
-            {
-                auto it = m_edgeItems.find(edgeId);
-                if (it != m_edgeItems.end())
-                {
-                    removeItem(it->second);
-                    delete it->second;
-                    m_edgeItems.erase(it);
-                }
-            }
-
-            m_graph.removeVertex(id);
-            removeItem(vertexItem);
-            m_vertexItems.erase(id);
-            delete vertexItem;
-
-            deletedItems << QString("vertex %1").arg(id);
-        }
-        else if (edgeItem)
-        {
-            int id = edgeItem->getEdgeId();
-            m_graph.removeEdge(id);
-            removeItem(edgeItem);
-            m_edgeItems.erase(id);
-            delete edgeItem;
-
-            deletedItems << QString("edge %1").arg(id);
-        }
+        if (VertexItem* v = dynamic_cast<VertexItem*>(item))
+            vertexIds.insert(v->getVertexId());
+        else if (EdgeItem* e = dynamic_cast<EdgeItem*>(item))
+            edgeIds.insert(e->getEdgeId());
     }
 
-    if (!deletedItems.isEmpty())
+    // --- Pass 2: add every edge connected to any selected vertex ---
+    for (int vid : vertexIds)
     {
-        emit actionLogged("Deleted: " + deletedItems.join(", "));
-        emit graphChanged();
+        auto it = m_graph.getConnectedEdgesIds().find(vid);
+        if (it != m_graph.getConnectedEdgesIds().end())
+            for (int eid : it->second)
+                edgeIds.insert(eid);
     }
+
+    // --- Pass 3: delete edge items (each ID handled exactly once) ---
+    for (int eid : edgeIds)
+    {
+        auto it = m_edgeItems.find(eid);
+        if (it != m_edgeItems.end())
+        {
+            removeItem(it->second);
+            delete it->second;
+            m_edgeItems.erase(it);
+        }
+        m_graph.removeEdge(eid);
+    }
+
+    // --- Pass 4: delete vertex items ---
+    for (int vid : vertexIds)
+    {
+        auto it = m_vertexItems.find(vid);
+        if (it != m_vertexItems.end())
+        {
+            removeItem(it->second);
+            delete it->second;
+            m_vertexItems.erase(it);
+        }
+        m_graph.removeVertex(vid);
+    }
+
+    QStringList log;
+    if (!vertexIds.empty()) log << QString("%1 vertices").arg((int)vertexIds.size());
+    if (!edgeIds.empty())   log << QString("%1 edges").arg((int)edgeIds.size());
+
+    emit actionLogged("Deleted: " + log.join(", "));
+    emit graphChanged();
 }
 
 void GridScene::drawGraph(const Graph& graph)
 {
     // Disable updates during bulk operations
-    // setUpdatesEnabled(false);
+    //setUpdatesEnabled(false);
 
     // Clear existing items
     clear();
@@ -385,7 +401,7 @@ void GridScene::drawGraph(const Graph& graph)
     }
 
     // Re-enable updates
-    // setUpdatesEnabled(true);
+    //setUpdatesEnabled(true);
     update();
 
     emit actionLogged(QString("Graph loaded: %1 vertices, %2 edges")
