@@ -34,9 +34,6 @@
     <addaction name="actionSave"/>
     <addaction name="actionSave_As"/>
     <addaction name="separator"/>
-    <addaction name="actionExport"/>
-    <addaction name="separator"/>
-    <addaction name="actionClose"/>
     <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
@@ -46,18 +43,10 @@
     <addaction name="actionUndo"/>
     <addaction name="actionRedo"/>
     <addaction name="separator"/>
-    <addaction name="actionCut"/>
-    <addaction name="actionCopy"/>
-    <addaction name="actionPaste"/>
     <addaction name="actionDelete"/>
     <addaction name="separator"/>
     <addaction name="actionSelect_All"/>
     <addaction name="actionDeselect_All"/>
-   </widget>
-   <widget class="QMenu" name="menuHelp">
-    <property name="title">
-     <string>Help</string>
-    </property>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -71,7 +60,6 @@
     <addaction name="actionSnap_to_Grid"/>
     <addaction name="separator"/>
     <addaction name="actionShow_Toolbar"/>
-    <addaction name="actionShow_Properties_Panel"/>
     <addaction name="actionShow_Action_History"/>
     <addaction name="separator"/>
     <addaction name="actionFullscreen"/>
@@ -103,6 +91,11 @@
     <addaction name="actionBuild_EMST_Kruskal"/>
     <addaction name="actionBuild_EMST_Prim"/>
     <addaction name="actionBuild_EMST_Auto"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -197,20 +190,16 @@ font-style: italic;
    <property name="text">
     <string>Save As...</string>
    </property>
-  </action>
-  <action name="actionExport">
-   <property name="text">
-    <string>Export</string>
-   </property>
-  </action>
-  <action name="actionClose">
-   <property name="text">
-    <string>Close</string>
+   <property name="shortcut">
+    <string>Ctrl+Shift+S</string>
    </property>
   </action>
   <action name="actionExit">
    <property name="text">
     <string>Exit</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+F4</string>
    </property>
   </action>
   <action name="actionUndo">
@@ -227,30 +216,6 @@ font-style: italic;
    </property>
    <property name="shortcut">
     <string>Ctrl+Y</string>
-   </property>
-  </action>
-  <action name="actionCut">
-   <property name="text">
-    <string>Cut</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+X</string>
-   </property>
-  </action>
-  <action name="actionCopy">
-   <property name="text">
-    <string>Copy</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+C</string>
-   </property>
-  </action>
-  <action name="actionPaste">
-   <property name="text">
-    <string>Paste</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+V</string>
    </property>
   </action>
   <action name="actionDelete">
@@ -273,6 +238,9 @@ font-style: italic;
    <property name="text">
     <string>Deselect All</string>
    </property>
+   <property name="shortcut">
+    <string>Escape</string>
+   </property>
   </action>
   <action name="actionZoom_In">
    <property name="text">
@@ -293,6 +261,9 @@ font-style: italic;
   <action name="actionReset_Zoom">
    <property name="text">
     <string>Reset Zoom</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+0</string>
    </property>
   </action>
   <action name="actionShow_Grid">
@@ -325,14 +296,6 @@ font-style: italic;
     <string>Show Toolbar</string>
    </property>
   </action>
-  <action name="actionShow_Properties_Panel">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Show Properties Panel</string>
-   </property>
-  </action>
   <action name="actionShow_Action_History">
    <property name="checkable">
     <bool>true</bool>
@@ -350,6 +313,9 @@ font-style: italic;
    </property>
    <property name="text">
     <string>Fullscreen</string>
+   </property>
+   <property name="shortcut">
+    <string>F11</string>
    </property>
   </action>
   <action name="actionDark_Mode">

@@ -14,14 +14,20 @@
 #include <QInputDialog>
 #include <QApplication>
 #include <QPalette>
-#include <QKeyEvent>
 #include <QStyle>
+#include <QKeyEvent>
+#include <QShortcut>
+#include <QGraphicsItem>
 #include <random>
 #include <cmath>
 #include <set>
 #include <functional>
 
-MainWindow::MainWindow(QWidget *parent)
+// ============================================================================
+// Constructor / destructor
+// ============================================================================
+
+MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , gridGraphicsView(new GridGraphicsView)
@@ -29,34 +35,42 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    // Setup tool action group for exclusive selection
-    QActionGroup *actionGroup_Tools = new QActionGroup(this);
-    actionGroup_Tools->addAction(ui->actionSelect);
-    actionGroup_Tools->addAction(ui->actionAdd_Node);
-    actionGroup_Tools->addAction(ui->actionAdd_Edge);
-    actionGroup_Tools->setExclusive(true);
+    // Exclusive tool-mode group
+    QActionGroup* toolGroup = new QActionGroup(this);
+    toolGroup->addAction(ui->actionSelect);
+    toolGroup->addAction(ui->actionAdd_Node);
+    toolGroup->addAction(ui->actionAdd_Edge);
+    toolGroup->setExclusive(true);
 
-    // Configure graphics view
+    // Graphics view setup
     gridGraphicsView->setDragMode(QGraphicsView::RubberBandDrag);
     gridGraphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     gridGraphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     gridGraphicsView->setRenderHint(QPainter::Antialiasing);
 
-    // Setup scene
     constexpr int sizeLimit = 20000;
     gridScene->setSceneRect(-sizeLimit, -sizeLimit, sizeLimit * 2, sizeLimit * 2);
     gridGraphicsView->setScene(gridScene);
 
-    // Add graphics view to central widget
     ui->centralwidget->layout()->addWidget(gridGraphicsView);
-
-    // Setup dock sizes
     resizeDocks({ui->dockAction_History}, {120}, Qt::Vertical);
 
-    // Connect signals
     connect(gridScene, &GridScene::actionLogged, this, &MainWindow::logAction);
 
-    // Log startup
+    // -----------------------------------------------------------------------
+    // Register Ctrl+M and Ctrl+Shift+M directly on the window.
+    // QAction shortcuts on sub-menu items are unreliable on Windows —
+    // Qt only guarantees shortcut processing for top-level menu actions.
+    // QShortcut with WindowShortcut context is always reliable.
+    // -----------------------------------------------------------------------
+    auto* scMST = new QShortcut(QKeySequence("Ctrl+M"), this);
+    scMST->setContext(Qt::WindowShortcut);
+    connect(scMST, &QShortcut::activated, this, &MainWindow::on_actionBuild_MST_Auto_triggered);
+
+    auto* scEMST = new QShortcut(QKeySequence("Ctrl+Shift+M"), this);
+    scEMST->setContext(Qt::WindowShortcut);
+    connect(scEMST, &QShortcut::activated, this, &MainWindow::on_actionBuild_EMST_Auto_triggered);
+
     logAction("Graph Editor initialized");
 }
 
@@ -65,17 +79,22 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+// ============================================================================
+// Logging
+// ============================================================================
+
 void MainWindow::logAction(const QString& action)
 {
     ui->plainTextEdit->appendPlainText(action);
 }
 
+// ============================================================================
+// Window / view slots
+// ============================================================================
+
 void MainWindow::on_actionFullscreen_triggered(bool checked)
 {
-    if (checked)
-        showFullScreen();
-    else
-        showNormal();
+    if (checked) showFullScreen(); else showNormal();
 }
 
 void MainWindow::on_dockAction_History_visibilityChanged(bool visible)
@@ -90,15 +109,13 @@ void MainWindow::on_actionShow_Action_History_triggered(bool checked)
 
 void MainWindow::on_actionZoom_In_triggered()
 {
-    constexpr double scaleFactor = 1.15;
-    gridGraphicsView->zoom(scaleFactor);
+    gridGraphicsView->zoom(1.15);
     logAction("Zoomed in");
 }
 
 void MainWindow::on_actionZoom_Out_triggered()
 {
-    constexpr double scaleFactor = 1.0 / 1.15;
-    gridGraphicsView->zoom(scaleFactor);
+    gridGraphicsView->zoom(1.0 / 1.15);
     logAction("Zoomed out");
 }
 
@@ -107,6 +124,63 @@ void MainWindow::on_actionReset_Zoom_triggered()
     gridGraphicsView->resetTransform();
     logAction("Reset zoom");
 }
+
+void MainWindow::on_actionShow_Grid_triggered(bool checked)
+{
+    gridScene->setShowGrid(checked);
+    gridScene->update();
+    logAction(checked ? "Grid shown" : "Grid hidden");
+}
+
+void MainWindow::on_actionShow_Toolbar_triggered(bool checked)
+{
+    ui->toolBar->setVisible(checked);
+}
+
+void MainWindow::on_actionSnap_to_Grid_triggered(bool checked)
+{
+    logAction(checked ? "Snap to grid enabled" : "Snap to grid disabled");
+}
+
+void MainWindow::on_actionDark_Mode_triggered(bool checked)
+{
+    if (checked)
+    {
+        qApp->setStyle("Fusion");
+        QPalette p;
+        p.setColor(QPalette::Window,          QColor(53, 53, 53));
+        p.setColor(QPalette::WindowText,      Qt::white);
+        p.setColor(QPalette::Base,            QColor(25, 25, 25));
+        p.setColor(QPalette::AlternateBase,   QColor(53, 53, 53));
+        p.setColor(QPalette::ToolTipBase,     Qt::white);
+        p.setColor(QPalette::ToolTipText,     Qt::white);
+        p.setColor(QPalette::Text,            Qt::white);
+        p.setColor(QPalette::Button,          QColor(53, 53, 53));
+        p.setColor(QPalette::ButtonText,      Qt::white);
+        p.setColor(QPalette::BrightText,      Qt::red);
+        p.setColor(QPalette::Link,            QColor(42, 130, 218));
+        p.setColor(QPalette::Highlight,       QColor(42, 130, 218));
+        p.setColor(QPalette::HighlightedText, Qt::black);
+        qApp->setPalette(p);
+        gridScene->setBackgroundBrush(QBrush(QColor(40, 40, 40)));
+        logAction("Dark mode enabled");
+    }
+    else
+    {
+        qApp->setPalette(style()->standardPalette());
+        gridScene->setBackgroundBrush(QBrush(Qt::white));
+        logAction("Dark mode disabled");
+    }
+}
+
+void MainWindow::on_actionExit_triggered()
+{
+    QApplication::quit();
+}
+
+// ============================================================================
+// Edit / tool slots
+// ============================================================================
 
 void MainWindow::on_actionSelect_triggered()
 {
@@ -135,157 +209,129 @@ void MainWindow::on_actionAdd_Edge_triggered()
     logAction("Mode: Add Edge");
 }
 
-void MainWindow::on_actionShow_Grid_triggered(bool checked)
-{
-    gridScene->setShowGrid(checked);
-    gridScene->update();
-    logAction(checked ? "Grid shown" : "Grid hidden");
-}
-
-void MainWindow::on_actionShow_Toolbar_triggered(bool checked)
-{
-    ui->toolBar->setVisible(checked);
-}
-
-void MainWindow::on_actionSnap_to_Grid_triggered(bool checked)
-{
-    logAction(checked ? "Snap to grid enabled" : "Snap to grid disabled");
-    // TODO: Implement snap to grid functionality
-}
-
 void MainWindow::on_actionDelete_triggered()
 {
-    // The GridScene handles deletion via keyboard
-    QKeyEvent* deleteEvent = new QKeyEvent(QEvent::KeyPress, Qt::Key_Delete, Qt::NoModifier);
-    QApplication::postEvent(gridScene, deleteEvent);
+    QKeyEvent* ev = new QKeyEvent(QEvent::KeyPress, Qt::Key_Delete, Qt::NoModifier);
+    QApplication::postEvent(gridScene, ev);
 }
 
-void MainWindow::on_actionDelaunay_Triangulation_triggered()
+void MainWindow::on_actionSelect_All_triggered()
 {
-    const Graph& current = gridScene->getGraph();
-
-    if (current.getVertices().size() < 3)
-    {
-        QMessageBox::warning(this, "Delaunay Triangulation",
-                             "Need at least 3 vertices to triangulate.");
-        return;
-    }
-
-    try
-    {
-        Graph triangulated = DelaunayTriangulation::buildTriangulatedGraph(current);
-        gridScene->drawGraph(triangulated);
-
-        int edgeCount = static_cast<int>(triangulated.getEdges().size());
-        int vertexCount = static_cast<int>(triangulated.getVertices().size());
-        logAction(QString("Delaunay triangulation: %1 vertices, %2 edges")
-                      .arg(vertexCount).arg(edgeCount));
-    }
-    catch (const std::exception& e)
-    {
-        QMessageBox::critical(this, "Triangulation Error", e.what());
-    }
+    for (QGraphicsItem* item : gridScene->items())
+        item->setSelected(true);
+    logAction("Selected all items");
 }
 
-void MainWindow::on_actionGenerate_Random_Graph_triggered()
+void MainWindow::on_actionDeselect_All_triggered()
 {
-    bool ok;
-    int numVertices = QInputDialog::getInt(
-        this,
-        "Generate Random Graph",
-        "Number of vertices:",
-        10, 3, 5000, 1, &ok
-        );
-
-    if (!ok) return;
-
-    int maxPossibleEdges = numVertices * (numVertices - 1);
-    int defaultEdges = std::min(numVertices * 2, maxPossibleEdges);
-
-    int numEdges = QInputDialog::getInt(
-        this,
-        "Generate Random Graph",
-        QString("Number of edges (max %1):").arg(maxPossibleEdges),
-        defaultEdges,
-        0,
-        maxPossibleEdges,
-        1,
-        &ok
-        );
-
-    if (!ok) return;
-
-    // Clear current graph
-    Graph newGraph;
-
-    // Random number generator
-    std::random_device rd;
-    std::mt19937 gen(rd());
-
-    // Random distribution for positions - larger area for more vertices
-    double areaSize = 500.0 + (numVertices / 10.0) * 50.0; // Scale with vertex count
-    std::uniform_real_distribution<> disX(-areaSize, areaSize);
-    std::uniform_real_distribution<> disY(-areaSize, areaSize);
-    std::uniform_real_distribution<> disWeight(0.1, 10.0);
-
-    // Create vertices at random positions
-    for (int i = 0; i < numVertices; ++i)
-    {
-        double x = disX(gen);
-        double y = disY(gen);
-        newGraph.addVertex(x, y, std::to_string(i));
-    }
-
-    // Create random edges
-    std::set<std::pair<int, int>> createdEdges;
-    int edgesCreated = 0;
-
-    std::uniform_int_distribution<> disVertex(0, numVertices - 1);
-
-    int maxAttempts = numEdges * 10; // Prevent infinite loop
-    int attempts = 0;
-
-    while (edgesCreated < numEdges && attempts < maxAttempts)
-    {
-        int v1 = disVertex(gen);
-        int v2 = disVertex(gen);
-        attempts++;
-
-        if (v1 == v2) continue;
-
-        // Ensure undirected uniqueness
-        auto edge = std::make_pair(std::min(v1, v2), std::max(v1, v2));
-
-        if (createdEdges.find(edge) == createdEdges.end())
-        {
-            float weight = disWeight(gen);
-            newGraph.addEdge(v1, v2, weight);
-            createdEdges.insert(edge);
-            edgesCreated++;
-        }
-    }
-
-    gridScene->drawGraph(newGraph);
-    logAction(QString("Generated random graph: %1 vertices, %2 edges")
-                  .arg(numVertices).arg(numEdges));
+    gridScene->clearSelection();
+    logAction("Deselected all");
 }
+
+void MainWindow::on_actionUndo_triggered()  { logAction("Undo (not yet implemented)"); }
+void MainWindow::on_actionRedo_triggered()  { logAction("Redo (not yet implemented)"); }
+
+// ============================================================================
+// File slots  —  JSON serialisation / deserialisation
+// ============================================================================
 
 void MainWindow::on_actionNew_File_triggered()
 {
-    QMessageBox::StandardButton reply = QMessageBox::question(
-        this,
-        "New File",
-        "Create a new graph? Unsaved changes will be lost.",
-        QMessageBox::Yes | QMessageBox::No
-        );
-
+    auto reply = QMessageBox::question(this, "New File",
+                                       "Create a new graph? Unsaved changes will be lost.",
+                                       QMessageBox::Yes | QMessageBox::No);
     if (reply == QMessageBox::Yes)
     {
-        Graph emptyGraph;
-        gridScene->drawGraph(emptyGraph);
+        gridScene->drawGraph(Graph{});
         m_currentFilePath.clear();
         logAction("New file created");
     }
+}
+
+// ------------------------------------------------------------------
+// Serialise the current graph to a QJsonObject.
+// Format:
+//   {
+//     "version": "1.0",
+//     "vertices": [ { "id":0, "x":10.5, "y":-3.2, "name":"A" }, ... ],
+//     "edges":    [ { "id":0, "start":0, "end":1, "weight":5.3, "name":"" }, ... ]
+//   }
+// ------------------------------------------------------------------
+static QJsonObject graphToJson(const Graph& g)
+{
+    QJsonObject root;
+    root["version"] = "1.0";
+
+    QJsonArray vArr;
+    for (const auto& [id, v] : g.getVertices())
+    {
+        QJsonObject o;
+        o["id"]   = id;
+        o["x"]    = static_cast<double>(v.getX());
+        o["y"]    = static_cast<double>(v.getY());
+        o["name"] = QString::fromStdString(v.getName());
+        vArr.append(o);
+    }
+    root["vertices"] = vArr;
+
+    QJsonArray eArr;
+    for (const auto& [id, e] : g.getEdges())
+    {
+        QJsonObject o;
+        o["id"]     = id;
+        o["start"]  = e.getStartVertexID();
+        o["end"]    = e.getEndVertexID();
+        o["weight"] = static_cast<double>(e.getWeight());
+        o["name"]   = QString::fromStdString(e.getName());
+        eArr.append(o);
+    }
+    root["edges"] = eArr;
+
+    return root;
+}
+
+// ------------------------------------------------------------------
+// Deserialise a QJsonObject into a Graph.
+// Returns an empty Graph and sets *errorOut on failure.
+// ------------------------------------------------------------------
+static Graph graphFromJson(const QJsonObject& root, QString* errorOut = nullptr)
+{
+    auto fail = [&](const QString& msg) -> Graph {
+        if (errorOut) *errorOut = msg;
+        return Graph{};
+    };
+
+    if (!root.contains("vertices") || !root.contains("edges"))
+        return fail("Missing 'vertices' or 'edges' key.");
+
+    Graph g;
+
+    for (const QJsonValue& val : root["vertices"].toArray())
+    {
+        if (!val.isObject()) return fail("Vertex entry is not a JSON object.");
+        QJsonObject v = val.toObject();
+        if (!v.contains("id") || !v.contains("x") || !v.contains("y"))
+            return fail("Vertex is missing required fields (id, x, y).");
+        g.addVertexWithID(v["id"].toInt(),
+                          static_cast<float>(v["x"].toDouble()),
+                          static_cast<float>(v["y"].toDouble()),
+                          v["name"].toString().toStdString());
+    }
+
+    for (const QJsonValue& val : root["edges"].toArray())
+    {
+        if (!val.isObject()) return fail("Edge entry is not a JSON object.");
+        QJsonObject e = val.toObject();
+        if (!e.contains("id") || !e.contains("start") || !e.contains("end"))
+            return fail("Edge is missing required fields (id, start, end).");
+        g.addEdgeWithID(e["id"].toInt(),
+                        e["start"].toInt(),
+                        e["end"].toInt(),
+                        static_cast<float>(e["weight"].toDouble(1.0)),
+                        e["name"].toString().toStdString());
+    }
+
+    return g;
 }
 
 void MainWindow::on_actionSave_triggered()
@@ -296,286 +342,240 @@ void MainWindow::on_actionSave_triggered()
         return;
     }
 
-    QJsonObject root;
-    root["version"] = "1.0";
-
-    // Save vertices
-    QJsonArray verticesArray;
-    for (const auto& [id, vertex] : gridScene->getGraph().getVertices())
-    {
-        QJsonObject v;
-        v["id"] = id;
-        v["x"] = static_cast<double>(vertex.getX());
-        v["y"] = static_cast<double>(vertex.getY());
-        v["name"] = QString::fromStdString(vertex.getName());
-        verticesArray.append(v);
-    }
-    root["vertices"] = verticesArray;
-
-    // Save edges
-    QJsonArray edgesArray;
-    for (const auto& [id, edge] : gridScene->getGraph().getEdges())
-    {
-        QJsonObject e;
-        e["id"] = id;
-        e["start"] = edge.getStartVertexID();
-        e["end"] = edge.getEndVertexID();
-        e["weight"] = static_cast<double>(edge.getWeight());
-        e["name"] = QString::fromStdString(edge.getName());
-        edgesArray.append(e);
-    }
-    root["edges"] = edgesArray;
-
-    QJsonDocument doc(root);
-
     QFile file(m_currentFilePath);
-    if (file.open(QIODevice::WriteOnly))
+    if (!file.open(QIODevice::WriteOnly))
     {
-        file.write(doc.toJson());
-        file.close();
-        logAction("Graph saved to: " + m_currentFilePath);
+        QMessageBox::warning(this, "Save Error",
+                             "Could not open file for writing:\n" + m_currentFilePath);
+        return;
     }
-    else
-    {
-        QMessageBox::warning(this, "Error", "Could not save file!");
-    }
+
+    QJsonDocument doc(graphToJson(gridScene->getGraph()));
+    file.write(doc.toJson(QJsonDocument::Indented));
+    file.close();
+    logAction("Saved: " + m_currentFilePath);
 }
 
 void MainWindow::on_actionSave_As_triggered()
 {
-    QString fileName = QFileDialog::getSaveFileName(
-        this,
-        "Save Graph",
-        "",
-        "JSON Files (*.json);;All Files (*)"
-        );
-
-    if (!fileName.isEmpty())
+    QString fn = QFileDialog::getSaveFileName(this, "Save Graph", "",
+                                              "JSON Graph Files (*.json);;All Files (*)");
+    if (!fn.isEmpty())
     {
-        m_currentFilePath = fileName;
+        m_currentFilePath = fn;
         on_actionSave_triggered();
     }
 }
 
 void MainWindow::on_actionOpen_File_triggered()
 {
-    QString fileName = QFileDialog::getOpenFileName(
-        this,
-        "Open Graph",
-        "",
-        "JSON Files (*.json);;All Files (*)"
-        );
+    QString fn = QFileDialog::getOpenFileName(this, "Open Graph", "",
+                                              "JSON Graph Files (*.json);;All Files (*)");
+    if (fn.isEmpty()) return;
 
-    if (fileName.isEmpty())
-        return;
-
-    QFile file(fileName);
+    QFile file(fn);
     if (!file.open(QIODevice::ReadOnly))
     {
-        QMessageBox::warning(this, "Error", "Could not open file!");
+        QMessageBox::warning(this, "Open Error", "Could not read file:\n" + fn);
         return;
     }
 
     QByteArray data = file.readAll();
     file.close();
 
-    QJsonDocument doc = QJsonDocument::fromJson(data);
-    if (doc.isNull() || !doc.isObject())
+    QJsonParseError parseErr;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &parseErr);
+    if (doc.isNull())
     {
-        QMessageBox::warning(this, "Error", "Invalid file format!");
+        QMessageBox::warning(this, "Parse Error",
+                             "JSON parse error: " + parseErr.errorString());
+        return;
+    }
+    if (!doc.isObject())
+    {
+        QMessageBox::warning(this, "Format Error", "File does not contain a JSON object.");
         return;
     }
 
-    QJsonObject root = doc.object();
-    Graph loadedGraph;
-
-    // Load vertices
-    QJsonArray verticesArray = root["vertices"].toArray();
-    for (const QJsonValue& val : verticesArray)
+    QString loadErr;
+    Graph g = graphFromJson(doc.object(), &loadErr);
+    if (!loadErr.isEmpty())
     {
-        QJsonObject v = val.toObject();
-        loadedGraph.addVertexWithID(
-            v["id"].toInt(),
-            v["x"].toDouble(),
-            v["y"].toDouble(),
-            v["name"].toString().toStdString()
-            );
+        QMessageBox::warning(this, "Load Error", loadErr);
+        return;
     }
 
-    // Load edges
-    QJsonArray edgesArray = root["edges"].toArray();
-    for (const QJsonValue& val : edgesArray)
-    {
-        QJsonObject e = val.toObject();
-        loadedGraph.addEdgeWithID(
-            e["id"].toInt(),
-            e["start"].toInt(),
-            e["end"].toInt(),
-            e["weight"].toDouble(),
-            e["name"].toString().toStdString()
-            );
-    }
-
-    gridScene->drawGraph(loadedGraph);
-    m_currentFilePath = fileName;
-    logAction("Graph loaded from: " + fileName);
+    gridScene->drawGraph(g);
+    m_currentFilePath = fn;
+    logAction("Loaded: " + fn);
 }
 
-void MainWindow::on_actionDark_Mode_triggered(bool checked)
-{
-    if (checked)
-    {
-        qApp->setStyle("Fusion");
-        QPalette darkPalette;
-        darkPalette.setColor(QPalette::Window, QColor(53, 53, 53));
-        darkPalette.setColor(QPalette::WindowText, Qt::white);
-        darkPalette.setColor(QPalette::Base, QColor(25, 25, 25));
-        darkPalette.setColor(QPalette::AlternateBase, QColor(53, 53, 53));
-        darkPalette.setColor(QPalette::ToolTipBase, Qt::white);
-        darkPalette.setColor(QPalette::ToolTipText, Qt::white);
-        darkPalette.setColor(QPalette::Text, Qt::white);
-        darkPalette.setColor(QPalette::Button, QColor(53, 53, 53));
-        darkPalette.setColor(QPalette::ButtonText, Qt::white);
-        darkPalette.setColor(QPalette::BrightText, Qt::red);
-        darkPalette.setColor(QPalette::Link, QColor(42, 130, 218));
-        darkPalette.setColor(QPalette::Highlight, QColor(42, 130, 218));
-        darkPalette.setColor(QPalette::HighlightedText, Qt::black);
-        qApp->setPalette(darkPalette);
+// ============================================================================
+// Graph slots
+// ============================================================================
 
-        gridScene->setBackgroundBrush(QBrush(QColor(40, 40, 40)));
-        logAction("Dark mode enabled");
-    }
-    else
+void MainWindow::on_actionGenerate_Random_Graph_triggered()
+{
+    bool ok;
+    int nV = QInputDialog::getInt(this, "Random Graph", "Number of vertices:",
+                                  10, 3, 5000, 1, &ok);
+    if (!ok) return;
+
+    int maxE = nV * (nV - 1);
+    int nE   = QInputDialog::getInt(this, "Random Graph",
+                                  QString("Number of edges (max %1):").arg(maxE),
+                                  std::min(nV * 2, maxE), 0, maxE, 1, &ok);
+    if (!ok) return;
+
+    Graph g;
+    std::mt19937 rng(std::random_device{}());
+    double area = 500.0 + (nV / 10.0) * 50.0;
+    std::uniform_real_distribution<double> dPos(-area, area);
+    std::uniform_real_distribution<double> dW(0.1, 10.0);
+    std::uniform_int_distribution<int>     dV(0, nV - 1);
+
+    for (int i = 0; i < nV; ++i)
+        g.addVertex(static_cast<float>(dPos(rng)),
+                    static_cast<float>(dPos(rng)),
+                    std::to_string(i));
+
+    std::set<std::pair<int,int>> used;
+    int created = 0, attempts = 0;
+    while (created < nE && attempts < nE * 10)
     {
-        qApp->setPalette(style()->standardPalette());
-        gridScene->setBackgroundBrush(QBrush(Qt::white));
-        logAction("Dark mode disabled");
+        ++attempts;
+        int a = dV(rng), b = dV(rng);
+        if (a == b) continue;
+        if (used.insert({std::min(a,b), std::max(a,b)}).second)
+        {
+            g.addEdge(a, b, static_cast<float>(dW(rng)));
+            ++created;
+        }
     }
+
+    gridScene->drawGraph(g);
+    logAction(QString("Generated random graph: %1 vertices, %2 edges").arg(nV).arg(created));
 }
 
-// ---------------------------------------------------------------------------
-// MST helpers
-// ---------------------------------------------------------------------------
-
-// Applies an MST result back to the scene.
-static void applyMST(GridScene* scene, MainWindow* win,
-                     std::function<Graph(const Graph&)> algo,
-                     const QString& algoName)
+void MainWindow::on_actionDelaunay_Triangulation_triggered()
 {
-    const Graph& current = scene->getGraph();
-
-    if (current.getVertices().size() < 2)
+    const Graph& cur = gridScene->getGraph();
+    if (cur.getVertices().size() < 3)
     {
-        QMessageBox::warning(win, algoName, "Need at least 2 vertices.");
+        QMessageBox::warning(this, "Delaunay Triangulation", "Need at least 3 vertices.");
         return;
     }
-    if (current.getEdges().empty())
-    {
-        QMessageBox::warning(win, algoName, "Graph has no edges. Add edges first or use EMST.");
-        return;
-    }
-
     try
     {
-        Graph mst = algo(current);
-        scene->drawGraph(mst);
-        /*win->logAction(QString("%1: %2 vertices, %3 edges")
-                           .arg(algoName)
-                           .arg((int)mst.getVertices().size())
-                           .arg((int)mst.getEdges().size()));*/
+        Graph t = DelaunayTriangulation::buildTriangulatedGraph(cur);
+        gridScene->drawGraph(t);
+        logAction(QString("Delaunay triangulation: %1 vertices, %2 edges")
+                      .arg((int)t.getVertices().size()).arg((int)t.getEdges().size()));
     }
     catch (const std::exception& e)
     {
-        QMessageBox::critical(win, algoName + " Error", e.what());
+        QMessageBox::critical(this, "Triangulation Error", e.what());
     }
 }
 
-// Builds EMST: Delaunay triangulation → MST on the triangulated graph.
-static Graph buildEMST(const Graph& graph, std::function<Graph(const Graph&)> mstAlgo)
+// ============================================================================
+// MST / EMST  private helpers
+// ============================================================================
+
+void MainWindow::applyMST(std::function<Graph(const Graph&)> algo, const QString& name)
 {
-    Graph triangulated = DelaunayTriangulation::buildTriangulatedGraph(graph);
-    return mstAlgo(triangulated);
+    const Graph& cur = gridScene->getGraph();
+    if (cur.getVertices().size() < 2)
+    {
+        QMessageBox::warning(this, name, "Need at least 2 vertices.");
+        return;
+    }
+    if (cur.getEdges().empty())
+    {
+        QMessageBox::warning(this, name,
+                             "Graph has no edges. Add edges first, or use EMST.");
+        return;
+    }
+    try
+    {
+        Graph mst = algo(cur);
+        gridScene->drawGraph(mst);
+        logAction(QString("%1: %2 vertices, %3 edges")
+                      .arg(name)
+                      .arg((int)mst.getVertices().size())
+                      .arg((int)mst.getEdges().size()));
+    }
+    catch (const std::exception& e)
+    {
+        QMessageBox::critical(this, name + " Error", e.what());
+    }
 }
 
-static void applyEMST(GridScene* scene, MainWindow* win,
-                      std::function<Graph(const Graph&)> mstAlgo,
-                      const QString& algoName)
+void MainWindow::applyEMST(std::function<Graph(const Graph&)> mstAlgo, const QString& name)
 {
-    const Graph& current = scene->getGraph();
-
-    if (current.getVertices().size() < 3)
+    const Graph& cur = gridScene->getGraph();
+    if (cur.getVertices().size() < 3)
     {
-        QMessageBox::warning(win, algoName, "Need at least 3 vertices for EMST.");
+        QMessageBox::warning(this, name, "Need at least 3 vertices for EMST.");
         return;
     }
 
-    // Warn if existing edges will be ignored
-    if (!current.getEdges().empty())
+    if (!cur.getEdges().empty())
     {
         auto btn = QMessageBox::warning(
-            win, algoName,
+            this, name,
             QString("The graph has %1 edge(s).\n"
-                    "EMST ignores existing edges and works only on vertex positions.\n"
-                    "Continue?").arg((int)current.getEdges().size()),
+                    "EMST works on vertex positions only and ignores existing edges.\n"
+                    "Continue?").arg((int)cur.getEdges().size()),
             QMessageBox::Ok | QMessageBox::Cancel);
-        if (btn != QMessageBox::Ok)
-            return;
+        if (btn != QMessageBox::Ok) return;
     }
 
     try
     {
-        // Strip edges: copy only vertices
-        Graph verticesOnly;
-        for (const auto& [id, v] : current.getVertices())
-            verticesOnly.addVertexWithID(id, v.getX(), v.getY(), v.getName());
+        // Build vertex-only graph (strip edges)
+        Graph vOnly;
+        for (const auto& [id, v] : cur.getVertices())
+            vOnly.addVertexWithID(id, v.getX(), v.getY(), v.getName());
 
-        Graph emst = buildEMST(verticesOnly, mstAlgo);
-        scene->drawGraph(emst);
-        /*win->logAction(QString("%1: %2 vertices, %3 edges")
-                           .arg(algoName)
-                           .arg((int)emst.getVertices().size())
-                           .arg((int)emst.getEdges().size()));*/
+        // Delaunay triangulation → MST on triangulated graph
+        Graph tri  = DelaunayTriangulation::buildTriangulatedGraph(vOnly);
+        Graph emst = mstAlgo(tri);
+
+        gridScene->drawGraph(emst);
+        logAction(QString("%1: %2 vertices, %3 edges")
+                      .arg(name)
+                      .arg((int)emst.getVertices().size())
+                      .arg((int)emst.getEdges().size()));
     }
     catch (const std::exception& e)
     {
-        QMessageBox::critical(win, algoName + " Error", e.what());
+        QMessageBox::critical(this, name + " Error", e.what());
     }
 }
 
-// ---------------------------------------------------------------------------
+// ============================================================================
 // MST slots
-// ---------------------------------------------------------------------------
+// ============================================================================
 
 void MainWindow::on_actionBuild_MST_Kruskal_triggered()
-{
-    applyMST(gridScene, this, GraphAlgorithms::buildKruskalMST, "MST (Kruskal)");
-}
+{ applyMST(GraphAlgorithms::buildKruskalMST, "MST (Kruskal)"); }
 
 void MainWindow::on_actionBuild_MST_Prim_triggered()
-{
-    applyMST(gridScene, this, GraphAlgorithms::buildPrimMST, "MST (Prim)");
-}
+{ applyMST(GraphAlgorithms::buildPrimMST, "MST (Prim)"); }
 
 void MainWindow::on_actionBuild_MST_Auto_triggered()
-{
-    applyMST(gridScene, this, GraphAlgorithms::buildAutoMST, "MST (Auto)");
-}
+{ applyMST(GraphAlgorithms::buildAutoMST, "MST (Auto)"); }
 
-// ---------------------------------------------------------------------------
+// ============================================================================
 // EMST slots
-// ---------------------------------------------------------------------------
+// ============================================================================
 
 void MainWindow::on_actionBuild_EMST_Kruskal_triggered()
-{
-    applyEMST(gridScene, this, GraphAlgorithms::buildKruskalMST, "EMST (Kruskal)");
-}
+{ applyEMST(GraphAlgorithms::buildKruskalMST, "EMST (Kruskal)"); }
 
 void MainWindow::on_actionBuild_EMST_Prim_triggered()
-{
-    applyEMST(gridScene, this, GraphAlgorithms::buildPrimMST, "EMST (Prim)");
-}
+{ applyEMST(GraphAlgorithms::buildPrimMST, "EMST (Prim)"); }
 
 void MainWindow::on_actionBuild_EMST_Auto_triggered()
-{
-    applyEMST(gridScene, this, GraphAlgorithms::buildAutoMST, "EMST (Auto)");
-}
+{ applyEMST(GraphAlgorithms::buildAutoMST, "EMST (Auto)"); }
