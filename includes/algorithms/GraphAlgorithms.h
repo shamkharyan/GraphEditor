@@ -2,6 +2,7 @@
 #define GRAPH_ALGORITHMS_H
 
 #include "../model/Graph.h"
+#include "MSTModelSelector.h"
 
 class GraphAlgorithms
 {

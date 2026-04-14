@@ -9,6 +9,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(MLPACK REQUIRED mlpack)
 qt_standard_project_setup()
 
 set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/includes)
@@ -50,7 +52,9 @@ qt_add_executable(GraphEditor
     includes/model/Graph.h
     srcs/model/Graph.cpp
     includes/algorithms/GraphAlgorithms.h
+    includes/algorithms/MSTModelSelector.h
     srcs/algorithms/GraphAlgorithms.cpp
+    srcs/algorithms/MSTModelSelector.cpp
     includes/GraphEditor.h
     srcs/GraphEditor.cpp
     includes/core/actions/AAction.h
@@ -71,6 +75,8 @@ qt_add_executable(GraphEditor
     srcs/view/EdgeItem.cpp
     includes/algorithms/Triangulation.h
     srcs/algorithms/Triangulation.cpp
+    srcs/mst_dataset/FeatureExtractor.cpp
+    srcs/mst_dataset/FeatureExtractor.h
 
 
 )
@@ -80,9 +86,10 @@ target_include_directories(GraphEditor PRIVATE
     ${INCLUDE_DIR}
     ${SRC_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
+    ${MLPACK_INCLUDE_DIRS}
 )
 
-target_link_libraries(GraphEditor PRIVATE Qt6::Widgets)
+target_link_libraries(GraphEditor PRIVATE Qt6::Widgets ${MLPACK_LIBRARIES})
 
 set_target_properties(GraphEditor PROPERTIES
     WIN32_EXECUTABLE ON

@@ -23,6 +23,16 @@
 #include <set>
 #include <functional>
 
+namespace
+{
+QString autoSelectedAlgorithmName(MSTModelSelector::Algorithm algorithm)
+{
+    return (algorithm == MSTModelSelector::Algorithm::Prim)
+        ? QStringLiteral("Prim")
+        : QStringLiteral("Kruskal");
+}
+}
+
 // ============================================================================
 // Constructor / destructor
 // ============================================================================
@@ -498,6 +508,14 @@ void MainWindow::applyMST(std::function<Graph(const Graph&)> algo, const QString
     }
     try
     {
+        if (name == "MST (Auto)")
+        {
+            const MSTModelSelector::Algorithm selected = MSTModelSelector::predict(cur);
+            logAction(QString("%1 selected algorithm: %2")
+                          .arg(name)
+                          .arg(autoSelectedAlgorithmName(selected)));
+        }
+
         Graph mst = algo(cur);
         gridScene->drawGraph(mst);
         logAction(QString("%1: %2 vertices, %3 edges")
@@ -540,6 +558,13 @@ void MainWindow::applyEMST(std::function<Graph(const Graph&)> mstAlgo, const QSt
 
         // Delaunay triangulation → MST on triangulated graph
         Graph tri  = DelaunayTriangulation::buildTriangulatedGraph(vOnly);
+        if (name == "EMST (Auto)")
+        {
+            const MSTModelSelector::Algorithm selected = MSTModelSelector::predict(tri);
+            logAction(QString("%1 selected algorithm: %2")
+                          .arg(name)
+                          .arg(autoSelectedAlgorithmName(selected)));
+        }
         Graph emst = mstAlgo(tri);
 
         gridScene->drawGraph(emst);

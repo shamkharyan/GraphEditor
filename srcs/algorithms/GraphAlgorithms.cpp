@@ -335,18 +335,8 @@ Graph GraphAlgorithms::buildPrimMST(const Graph& graph)
 
 Graph GraphAlgorithms::buildAutoMST(const Graph& graph)
 {
-    const std::size_t V = graph.getVertices().size();
-    const std::size_t E = graph.getEdges().size();
-
-    // Dense when E > V * log2(V).
-    // Below that Kruskal's smaller constant tends to win;
-    // above it Prim's O(E log V) vs Kruskal's O(E log E) cost differs only
-    // by the log factor, but Prim's tighter inner loop wins in practice.
-    const auto logV = static_cast<std::size_t>(
-        V > 1 ? std::log2(static_cast<double>(V)) : 1.0);
-
-    if (E > V * logV)
-        return buildPrimMST(graph);
-    else
-        return buildKruskalMST(graph);
+    const MSTModelSelector::Algorithm algorithm = MSTModelSelector::predict(graph);
+    return (algorithm == MSTModelSelector::Algorithm::Prim)
+        ? buildPrimMST(graph)
+        : buildKruskalMST(graph);
 }
