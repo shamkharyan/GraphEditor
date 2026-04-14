@@ -24,96 +24,187 @@
 // ============================================================================
 
 Graph GraphAlgorithms::buildKruskalMST(const Graph& graph)
+
 {
+
     const auto& vertexMap = graph.getVertices();
+
     const auto& edgeMap   = graph.getEdges();
 
+
+
     const int V = static_cast<int>(vertexMap.size());
+
     const int E = static_cast<int>(edgeMap.size());
+
+
 
     if (V == 0) return Graph{};
 
+
+
     // ── Dense vertex ID remapping ────────────────────────────────────────────
+
     // Vertex IDs may not be 0-based or contiguous. Map them to [0, V) once
+
     // so that all subsequent operations index into flat arrays.
+
     std::unordered_map<int, int> toIdx;
+
     toIdx.reserve(V);
+
     std::vector<int> toId(V);
+
     {
+
         int i = 0;
+
         for (const auto& [id, _] : vertexMap)
+
         {
+
             toIdx[id] = i;
+
             toId[i]   = id;
+
             ++i;
+
         }
+
     }
+
+
 
     // ── Compact edge list ────────────────────────────────────────────────────
+
     struct KEdge { float w; int u, v, origId; };
+
     std::vector<KEdge> edges;
+
     edges.reserve(E);
+
     for (const auto& [id, e] : edgeMap)
+
         edges.push_back({ e.getWeight(),
+
                           toIdx[e.getStartVertexID()],
+
                           toIdx[e.getEndVertexID()],
+
                           id });
 
+
+
     std::sort(edges.begin(), edges.end(),
+
               [](const KEdge& a, const KEdge& b){ return a.w < b.w; });
 
+
+
     // ── Flat union-find: parent[i] >= 0 → parent; < 0 → -size (root) ────────
+
     std::vector<int> parent(V, -1);
 
+
+
     // Iterative path-halving find — no recursion, no std::function overhead
+
     auto find = [&](int x) -> int {
+
         while (parent[x] >= 0)
+
         {
+
             if (parent[parent[x]] >= 0)
+
                 parent[x] = parent[parent[x]];  // path halving
+
             x = parent[x];
+
         }
+
         return x;
+
     };
+
+
 
     auto unite = [&](int x, int y) -> bool {
+
         x = find(x); y = find(y);
+
         if (x == y) return false;
+
         if (parent[x] > parent[y]) std::swap(x, y);   // union by size
+
         parent[x] += parent[y];
+
         parent[y]  = x;
+
         return true;
+
     };
 
+
+
     // ── Build MST ────────────────────────────────────────────────────────────
+
     // Collect chosen edges first, build Graph output after the loop to avoid
+
     // paying Graph's internal bookkeeping inside the hot path.
+
     struct ChosenEdge { float w; int u, v; };
+
     std::vector<ChosenEdge> chosen;
+
     chosen.reserve(V - 1);
 
+
+
     for (const KEdge& e : edges)
+
     {
+
         if (unite(e.u, e.v))
+
         {
+
             chosen.push_back({ e.w, toId[e.u], toId[e.v] });
+
             if (static_cast<int>(chosen.size()) == V - 1)
+
                 break;   // MST complete — skip remaining edges
+
         }
+
     }
 
+
+
     if (static_cast<int>(chosen.size()) < V - 1)
+
         throw std::runtime_error(
+
             "Graph is disconnected: MST does not exist for the entire graph.");
 
+
+
     // ── Assemble output graph ────────────────────────────────────────────────
+
     Graph mst;
+
     for (const auto& [id, vertex] : vertexMap)
+
         mst.addVertexWithID(id, vertex.getX(), vertex.getY(), vertex.getName());
+
     for (const ChosenEdge& e : chosen)
+
         mst.addEdge(e.u, e.v, e.w);
 
+
+
     return mst;
+
 }
 
 // ============================================================================
